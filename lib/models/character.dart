@@ -1,22 +1,22 @@
 class Character {
   final String id;
   final String name;
-  final String? profileImageUrl;
-  final String? description;
+  final String profileImageUrl;
+  final String description;
 
   Character({
     required this.id,
     required this.name,
-    this.profileImageUrl,
-    this.description,
+    required this.profileImageUrl,
+    required this.description,
   });
 
   factory Character.fromJson(Map<String, dynamic> json) {
     return Character(
-      id: json['id'].toString(),
+      id: json['id'],
       name: json['name'],
-      profileImageUrl: json['profile_image_url'],
-      description: json['description'],
+      profileImageUrl: json['profileImageUrl'] ?? '', // 예외 방지
+      description: json['description'] ?? '',
     );
   }
 

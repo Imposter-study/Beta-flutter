@@ -11,53 +11,38 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Character> _characters = [];
-  bool _isLoading = true;
-  String? _error;
+  late Future<List<Character>> _characters;
 
   @override
   void initState() {
     super.initState();
-    _loadCharacters();
-  }
-
-  Future<void> _loadCharacters() async {
-    try {
-      final characters = await ChatService.fetchCharacters();
-      setState(() {
-        _characters = characters;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = '캐릭터 불러오기 실패: $e';
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _onCharacterTap(Character character) {
-    Navigator.pushNamed(context, '/chat', arguments: character);
+    _characters = ChatService.fetchCharacters();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('캐릭터 목록')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(child: Text(_error!))
-              : ListView.builder(
-                  itemCount: _characters.length,
-                  itemBuilder: (context, index) {
-                    final character = _characters[index];
-                    return GestureDetector(
-                      onTap: () => _onCharacterTap(character),
-                      child: CharacterCard(character: character),
-                    );
-                  },
-                ),
+      appBar: AppBar(title: const Text('캐릭터 선택')),
+      body: FutureBuilder<List<Character>>(
+        future: _characters,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('에러: ${snapshot.error}'));
+          }
+
+          final characters = snapshot.data!;
+          return ListView.builder(
+            itemCount: characters.length,
+            itemBuilder: (context, index) {
+              return CharacterCard(character: characters[index]);
+            },
+          );
+        },
+      ),
     );
   }
 }
