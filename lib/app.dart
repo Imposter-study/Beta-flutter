@@ -1,25 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/chat_screen.dart';
 
-final GoRouter router = GoRouter(
+final GoRouter _router = GoRouter(
   routes: [
+    GoRoute(path: '/', builder: (context, state) =>  LoginScreen()),
+    GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
     GoRoute(
-      path: '/',
-      builder: (context, state) => LoginScreen(),
-    ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => HomeScreen(),
-    ),
-    GoRoute(
-      path: '/chat/:id',
+      path: '/chat/:characterId',
       builder: (context, state) {
-        final id = state.params['id']!;
-        return ChatScreen(characterId: id);
+        final characterId = state.pathParameters['characterId']!;
+        return ChatScreen(characterId: characterId);
       },
     ),
   ],
@@ -30,7 +23,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Beta Zeta Clone',
-      routerConfig: router,
+      routerConfig: _router,
       theme: ThemeData(primarySwatch: Colors.indigo),
     );
   }

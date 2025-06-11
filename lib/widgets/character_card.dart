@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/character.dart';
+import 'package:go_router/go_router.dart';
 
 class CharacterCard extends StatelessWidget {
   final Character character;
@@ -17,7 +18,8 @@ class CharacterCard extends StatelessWidget {
         title: Text(character.name),
         subtitle: Text(character.description),
         onTap: () {
-          // TODO: 캐릭터 선택 → 채팅방 이동
+          // 캐릭터 ID 넘겨서 채팅 화면으로 이동
+          context.go('/chat/${character.id}');
         },
       ),
     );
