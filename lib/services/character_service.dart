@@ -1,3 +1,5 @@
+// API서비스 클래스 이므로 추후 수정해야함
+
 import 'package:zeta/models/character.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
