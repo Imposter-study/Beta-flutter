@@ -1,82 +1,60 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../providers/user_provider.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _authService = AuthService();
   bool _isLoading = false;
-  String? _errorMessage;
 
   void _login() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
+    setState(() => _isLoading = true);
     try {
-      await AuthService.login(
+      final token = await _authService.login(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
-      // 로그인 성공하면 홈 화면으로 이동
+
+      Provider.of<UserProvider>(context, listen: false).setToken(token);
+      if (!mounted) return;
       context.go('/home');
     } catch (e) {
-      setState(() {
-        _errorMessage = '로그인 실패: ${e.toString()}';
-      });
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('로그인 실패'),
+          content: Text(e.toString()),
+        ),
+      );
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('로그인')),
+      appBar: AppBar(title: const Text('로그인')),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: '이메일'),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            SizedBox(height: 12),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: '비밀번호'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            if (_errorMessage != null)
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Colors.red),
-              ),
-            SizedBox(height: 20),
+            TextField(controller: _emailController, decoration: const InputDecoration(labelText: '이메일')),
+            TextField(controller: _passwordController, obscureText: true, decoration: const InputDecoration(labelText: '비밀번호')),
+            const SizedBox(height: 20),
             _isLoading
-                ? CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _login,
-                    child: Text('로그인'),
-                  ),
+                ? const CircularProgressIndicator()
+                : ElevatedButton(onPressed: _login, child: const Text('로그인')),
           ],
         ),
       ),

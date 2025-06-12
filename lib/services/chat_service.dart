@@ -3,16 +3,23 @@ import 'package:http/http.dart' as http;
 import '../models/character.dart';
 
 class ChatService {
-  static const String baseUrl = 'https://your-api.com/api'; // 실제 API 주소로 변경
+  final String baseUrl = 'https://your-api-domain.com/api/chatbot'; // 실제 API 주소로 교체
 
-  static Future<List<Character>> fetchCharacters() async {
-    final response = await http.get(Uri.parse('$baseUrl/chatbot/characters'));
+  Future<List<Character>> fetchCharacters(String token) async {
+    final url = Uri.parse('$baseUrl/characters/');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonList = jsonDecode(response.body);
-      return jsonList.map((e) => Character.fromJson(e)).toList();
+      final List data = jsonDecode(response.body);
+      return data.map((e) => Character.fromJson(e)).toList();
     } else {
-      throw Exception('캐릭터 불러오기 실패');
+      throw Exception('캐릭터 목록 불러오기 실패: ${response.body}');
     }
   }
 }

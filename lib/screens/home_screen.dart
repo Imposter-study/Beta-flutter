@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/character.dart';
-import '../services/chatbot_service.dart';
+import '../providers/user_provider.dart';
+import '../services/chat_service.dart';
 import '../widgets/character_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -11,13 +13,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late Future<List<Character>> charactersFuture;
-  final chatbotService = ChatbotService(baseUrl: 'https://api-base-url.com/api/chatbot');
+  final _chatService = ChatService();
+  late Future<List<Character>> _futureCharacters;
 
   @override
   void initState() {
     super.initState();
-    charactersFuture = chatbotService.fetchCharacters();
+    final token = Provider.of<UserProvider>(context, listen: false).token!;
+    _futureCharacters = _chatService.fetchCharacters(token);
   }
 
   @override
@@ -25,23 +28,23 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('캐릭터 목록')),
       body: FutureBuilder<List<Character>>(
-        future: charactersFuture,
+        future: _futureCharacters,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('오류 발생: ${snapshot.error}'));
+            return Center(child: Text('에러: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('캐릭터가 없습니다.'));
-          } else {
-            final characters = snapshot.data!;
-            return ListView.builder(
-              itemCount: characters.length,
-              itemBuilder: (context, index) {
-                return CharacterCard(character: characters[index]);
-              },
-            );
           }
+
+          final characters = snapshot.data!;
+          return ListView.builder(
+            itemCount: characters.length,
+            itemBuilder: (context, index) {
+              return CharacterCard(character: characters[index]);
+            },
+          );
         },
       ),
     );

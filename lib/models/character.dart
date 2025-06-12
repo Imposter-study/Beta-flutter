@@ -13,9 +13,9 @@ class Character {
 
   factory Character.fromJson(Map<String, dynamic> json) {
     return Character(
-      id: json['id'],
-      name: json['name'],
-      profileImageUrl: json['profileImageUrl'] ?? '', // 예외 방지
+      id: json['id'].toString(),
+      name: json['name'] ?? '',
+      profileImageUrl: json['profile_image_url'] ?? '',
       description: json['description'] ?? '',
     );
   }
