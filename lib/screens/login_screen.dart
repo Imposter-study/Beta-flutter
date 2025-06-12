@@ -20,12 +20,18 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() async {
     setState(() => _isLoading = true);
     try {
-      final token = await _authService.login(
+      final result = await _authService.login(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
 
-      Provider.of<UserProvider>(context, listen: false).setToken(token);
+      final token = result['token']!;
+      final userId = result['userId']!;
+      Provider.of<UserProvider>(
+        context,
+        listen: false,
+      ).setAuth(token: token, userId: userId);
+
       if (!mounted) return;
       context.go('/home');
     } catch (e) {
@@ -49,8 +55,15 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            TextField(controller: _emailController, decoration: const InputDecoration(labelText: '이메일')),
-            TextField(controller: _passwordController, obscureText: true, decoration: const InputDecoration(labelText: '비밀번호')),
+            TextField(
+              controller: _emailController,
+              decoration: const InputDecoration(labelText: '이메일'),
+            ),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: '비밀번호'),
+            ),
             const SizedBox(height: 20),
             _isLoading
                 ? const CircularProgressIndicator()

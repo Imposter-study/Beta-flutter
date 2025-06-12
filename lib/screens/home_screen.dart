@@ -13,14 +13,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _chatService = ChatService();
+  late ChatService _chatService;
   late Future<List<Character>> _futureCharacters;
 
   @override
   void initState() {
     super.initState();
     final token = Provider.of<UserProvider>(context, listen: false).token!;
-    _futureCharacters = _chatService.fetchCharacters(token);
+    _chatService = ChatService(token: token);
+    _futureCharacters = _chatService.fetchCharacters();
   }
 
   @override

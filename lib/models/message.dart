@@ -1,23 +1,31 @@
 class Message {
   final String id;
-  final String text;
-  final String isUser;
+  final String content;
+  final String senderId;
   final DateTime timestamp;
 
-// Message 생성자
   Message({
     required this.id,
-    required this.text,
-    required this.isUser,
+    required this.content,
+    required this.senderId,
     required this.timestamp,
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      id:json['id'],
-      text: json['text'],
-      isUser:json['is_user'],
-      timestamp:DateTime.parse(json['timestamp']),
+      id: json['id'],
+      content: json['content'],
+      senderId: json['senderId'],
+      timestamp: DateTime.parse(json['timestamp']),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'content': content,
+      'senderId': senderId,
+      'timestamp': timestamp.toIso8601String(),
+    };
   }
 }
