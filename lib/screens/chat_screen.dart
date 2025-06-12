@@ -1,132 +1,92 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../models/message.dart';
-import '../services/chat_service.dart';
-import '../providers/user_provider.dart';
-import '../widgets/message_bubble.dart';
+import '../models/character_model.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String characterId;
-  const ChatScreen({super.key, required this.characterId});
+  final Character character;
+
+  const ChatScreen({super.key, required this.character});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  late ChatService _chatService;
-  late Future<List<Message>> _futureMessages;
   final TextEditingController _controller = TextEditingController();
-  late String _roomId;
-  Timer? _timer;
-  final ScrollController _scrollController = ScrollController();
+  final List<String> _messages = [];
 
-  @override
-  void initState() {
-    super.initState();
-    final token = Provider.of<UserProvider>(context, listen: false).token!;
-    _chatService = ChatService(token: token);
-    _roomId = widget.characterId;
-    _futureMessages = _chatService.fetchMessages(_roomId);
+  void _sendMessage() {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
 
-    // 5초마다 메시지 새로고침
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      setState(() {
-        _futureMessages = _chatService.fetchMessages(_roomId);
-      });
+    setState(() {
+      _messages.add(text);
     });
-  }
+    _controller.clear();
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  bool _canSendMessage() {
-    return _controller.text.trim().isNotEmpty;
-  }
-
-  Future<void> _sendMessage() async {
-    final content = _controller.text.trim();
-    if (content.isEmpty) return;
-
-    try {
-      await _chatService.sendMessage(_roomId, content);
-      _controller.clear();
-      setState(() {
-        _futureMessages = _chatService.fetchMessages(_roomId);
-      });
-      // 메시지 전송 후 스크롤 맨 아래로 이동
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('전송 실패: $e')),
-      );
-    }
+    // TODO: AI 챗봇 응답 로직 연결
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('채팅방')),
+      appBar: AppBar(
+        title: Text(widget.character.name),
+        backgroundColor: Colors.indigo,
+      ),
       body: Column(
         children: [
           Expanded(
-            child: FutureBuilder<List<Message>>(
-              future: _futureMessages,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('에러: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('메시지가 없습니다.'));
-                }
-
-                final messages = snapshot.data!;
-                return ListView.builder(
-                  controller: _scrollController,
-                  reverse: true,
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[messages.length - 1 - index];
-                    return MessageBubble(message: message);
-                  },
+            child: ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final msg = _messages[index];
+                return Align(
+                  alignment: index % 2 == 0 ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: index % 2 == 0 ? Colors.indigo[400] : Colors.grey[800],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(msg, style: const TextStyle(color: Colors.white)),
+                  ),
                 );
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(hintText: '메시지를 입력하세요'),
-                    onChanged: (_) => setState(() {}),
-                    onSubmitted: (_) => _sendMessage(),
+
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        hintText: '메시지 입력...',
+                        filled: true,
+                        fillColor: Colors.black54,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                      onSubmitted: (_) => _sendMessage(),
+                    ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: _canSendMessage() ? _sendMessage : null,
-                ),
-              ],
+                  IconButton(
+                    onPressed: _sendMessage,
+                    icon: const Icon(Icons.send),
+                    color: Colors.indigo,
+                  )
+                ],
+              ),
             ),
-          ),
+          )
         ],
       ),
     );

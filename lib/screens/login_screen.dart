@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../services/auth_service.dart';
-import '../providers/user_provider.dart';
-import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,63 +8,89 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _authService = AuthService();
-  bool _isLoading = false;
+  final _formKey = GlobalKey<FormState>();
+  String email = '';
+  String password = '';
 
-  void _login() async {
-    setState(() => _isLoading = true);
-    try {
-      final result = await _authService.login(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
-      );
-
-      final token = result['token']!;
-      final userId = result['userId']!;
-      Provider.of<UserProvider>(
-        context,
-        listen: false,
-      ).setAuth(token: token, userId: userId);
-
-      if (!mounted) return;
-      context.go('/home');
-    } catch (e) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('로그인 실패'),
-          content: Text(e.toString()),
-        ),
-      );
-    } finally {
-      setState(() => _isLoading = false);
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      // TODO: 로그인 API 호출
+      print('로그인 시도: $email / $password');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('로그인')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: '이메일'),
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  '로그인',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                TextFormField(
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: '이메일',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white38),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.indigo),
+                    ),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) =>
+                      value != null && value.contains('@') ? null : '유효한 이메일을 입력하세요.',
+                  onSaved: (value) => email = value ?? '',
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: '비밀번호',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white38),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.indigo),
+                    ),
+                  ),
+                  obscureText: true,
+                  validator: (value) =>
+                      value != null && value.length >= 6 ? null : '6자 이상 비밀번호를 입력하세요.',
+                  onSaved: (value) => password = value ?? '',
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                  child: const Text(
+                    '로그인',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ],
             ),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: '비밀번호'),
-            ),
-            const SizedBox(height: 20),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(onPressed: _login, child: const Text('로그인')),
-          ],
+          ),
         ),
       ),
     );

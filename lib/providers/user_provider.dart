@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
+import '../models/user_model.dart';
 
-class UserProvider with ChangeNotifier {
-  String? _token;
-  String? _userId;
+class UserProvider extends ChangeNotifier {
+  User? _user;
 
-  String? get token => _token;
-  String? get userId => _userId;
+  User? get user => _user;
 
-  bool get isLoggedIn => _token != null;
-
-  void setAuth({required String token, required String userId}) {
-    _token = token;
-    _userId = userId;
+  void setUser(User user) {
+    _user = user;
     notifyListeners();
   }
 
-  void logout() {
-    _token = null;
-    _userId = null;
+  void clearUser() {
+    _user = null;
     notifyListeners();
   }
+
+  bool get isLoggedIn => _user != null;
 }

@@ -1,52 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../models/character.dart';
-import '../providers/user_provider.dart';
-import '../services/chat_service.dart';
-import '../widgets/character_card.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  late ChatService _chatService;
-  late Future<List<Character>> _futureCharacters;
-
-  @override
-  void initState() {
-    super.initState();
-    final token = Provider.of<UserProvider>(context, listen: false).token!;
-    _chatService = ChatService(token: token);
-    _futureCharacters = _chatService.fetchCharacters();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('캐릭터 목록')),
-      body: FutureBuilder<List<Character>>(
-        future: _futureCharacters,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('에러: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('캐릭터가 없습니다.'));
-          }
-
-          final characters = snapshot.data!;
-          return ListView.builder(
-            itemCount: characters.length,
-            itemBuilder: (context, index) {
-              return CharacterCard(character: characters[index]);
-            },
-          );
-        },
+    return SafeArea(
+      child: Container(
+        color: Colors.black,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              '추천 캐릭터',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 10),
+            // 추천 캐릭터 리스트 (나중에 ListView 등으로 확장)
+            Expanded(
+              child: Center(
+                child: Text(
+                  '추천 캐릭터 리스트',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
