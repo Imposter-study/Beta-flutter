@@ -63,3 +63,9 @@
 - iPhone을 Mac에 USB로 연결
 - 연결된 기기를 Xcode에서 신뢰하고 디바이스로 선택
 - ▶️ 버튼 클릭 → 실제 iOS 기기에서 앱 실행됨
+
+
+---
+### 셋팅 정리 노션URL
+- https://shine-lungfish-f32.notion.site/APP-1feb0a57278e80c6ba16cc0977f5b58a
+- 위 주소 접속 후 '스터디 자료' -> 'Flutter 개발셋팅' 참고
