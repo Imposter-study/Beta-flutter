@@ -1,37 +1,59 @@
 import 'package:flutter/material.dart';
+import 'tabs/home_tab.dart';
+import 'tabs/recommend_tab.dart';
+import 'tabs/ranking_tab.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        color: Colors.black,
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              '추천 캐릭터',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('홈'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              labelStyle: const TextStyle(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
+              tabs: const [
+                Tab(text: '홈'),
+                Tab(text: '추천'),
+                Tab(text: '랭킹'),
+              ],
             ),
-            SizedBox(height: 10),
-            // 추천 캐릭터 리스트 (나중에 ListView 등으로 확장)
-            Expanded(
-              child: Center(
-                child: Text(
-                  '추천 캐릭터 리스트',
-                  style: TextStyle(color: Colors.white70),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: const [HomeTab(), RecommendTab(), RankingTab()],
       ),
     );
   }
