@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/ai_character.dart';
 import '../utils/colors.dart';
+/// colors.dart 체크
 
 class CharacterDetailScreen extends StatelessWidget {
   final AiCharacter character;
